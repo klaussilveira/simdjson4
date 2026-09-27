@@ -24,6 +24,10 @@ extern "C" {
 
 #include "php_simdjson.h"
 #include "simdjson_arginfo.h"
+#if PHP_VERSION_ID >= 80000
+#include "zend_smart_str.h"
+#include "ext/json/php_json.h"
+#endif
 
 /**
  * Both the declaration and the definition of PHP_SIMDJSON_API variables, functions must be within an 'extern "C"' block for Windows
@@ -35,6 +39,7 @@ PHP_SIMDJSON_API zend_class_entry *simdjson_value_error_ce;
 
 /* C++ header file for simdjson_php helper methods/classes */
 #include "src/simdjson_bindings_defs.h"
+#include "src/simdjson_encoder.h"
 /* Single header file from fork of simdjson C project (to imitate php's handling of infinity/overflowing integers in json_decode) */
 #include "src/simdjson.h"
 
@@ -83,6 +88,14 @@ SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_key_count_arginfo, 0, 
         ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
         ZEND_ARG_TYPE_INFO(0, throw_if_uncountable, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
+
+#if PHP_VERSION_ID >= 80000
+SIMDJSON_ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(simdjson_encode_arginfo, 0, 1, IS_STRING, 0)
+        ZEND_ARG_TYPE_INFO(0, value, IS_MIXED, 0)
+        ZEND_ARG_TYPE_INFO(0, flags, IS_LONG, 0)
+        ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+#endif
 
 #define SIMDJSON_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(simdjson, v)
 static simdjson_php_parser *simdjson_get_parser() {
@@ -221,6 +234,56 @@ PHP_FUNCTION (simdjson_key_exists) {
     }
 }
 
+#if PHP_VERSION_ID >= 80000
+static const char *simdjson_json_error_msg(int error) {
+    switch (error) {
+        case PHP_JSON_ERROR_DEPTH:
+            return "Maximum stack depth exceeded";
+        case PHP_JSON_ERROR_UTF8:
+            return "Malformed UTF-8 characters, possibly incorrectly encoded";
+        case PHP_JSON_ERROR_RECURSION:
+            return "Recursion detected";
+        case PHP_JSON_ERROR_INF_OR_NAN:
+            return "Inf and NaN cannot be JSON encoded";
+        case PHP_JSON_ERROR_UNSUPPORTED_TYPE:
+            return "Type is not supported";
+#if PHP_VERSION_ID >= 80100
+        case PHP_JSON_ERROR_NON_BACKED_ENUM:
+            return "Non-backed enums have no default serialization";
+#endif
+        default:
+            return "Unknown error";
+    }
+}
+
+PHP_FUNCTION (simdjson_encode) {
+    zval *value;
+    zend_long options = 0;
+    zend_long depth = SIMDJSON_PARSE_DEFAULT_DEPTH;
+    ZEND_PARSE_PARAMETERS_START(1, 3)
+        Z_PARAM_ZVAL(value)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_LONG(options)
+        Z_PARAM_LONG(depth)
+    ZEND_PARSE_PARAMETERS_END();
+    if (!simdjson_validate_depth(depth, "simdjson_encode", 3)) {
+        RETURN_THROWS();
+    }
+    smart_str buf = {0};
+    int error = simdjson_encode_to_smart_str(&buf, value, options, depth);
+    if (EG(exception)) {
+        smart_str_free(&buf);
+        RETURN_THROWS();
+    }
+    if (error && !(options & PHP_JSON_PARTIAL_OUTPUT_ON_ERROR)) {
+        smart_str_free(&buf);
+        zend_throw_exception(simdjson_exception_ce, simdjson_json_error_msg(error), error);
+        RETURN_THROWS();
+    }
+    RETURN_STR(smart_str_extract(&buf));
+}
+#endif
+
 /* {{{ simdjson_functions[]
 */
 zend_function_entry simdjson_functions[] = {
@@ -229,6 +292,9 @@ zend_function_entry simdjson_functions[] = {
     PHP_FE(simdjson_key_value, simdjson_key_value_arginfo)
     PHP_FE(simdjson_key_exists, simdjson_key_exists_arginfo)
     PHP_FE(simdjson_key_count, simdjson_key_count_arginfo)
+#if PHP_VERSION_ID >= 80000
+    PHP_FE(simdjson_encode, simdjson_encode_arginfo)
+#endif
     {NULL, NULL, NULL}
 };
 /* }}} */
@@ -334,6 +400,9 @@ PHP_MINFO_FUNCTION (simdjson) {
 /** {{{ module depends
  */
 zend_module_dep simdjson_deps[] = {
+#if PHP_VERSION_ID >= 80000
+    ZEND_MOD_REQUIRED("json")
+#endif
     {NULL, NULL, NULL}
 };
 /* }}} */

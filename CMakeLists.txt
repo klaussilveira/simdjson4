@@ -11,6 +11,9 @@ set(SOURCE_FILES
     simdjson_arginfo.h
     src/simdjson_bindings_defs.h
     src/simdjson_bindings.cpp
+    src/simdjson_encoder.h
+    src/simdjson_encoder.cpp
+    src/dragonbox.h
     src/simdjson.h
     src/simdjson.cpp
 )

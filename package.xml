@@ -35,6 +35,7 @@
 * BC break: SimdJsonException messages now start with the error code name, e.g. "DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)".
 * BC break: The numeric values of SIMDJSON_ERR_UTF8_ERROR and all later SIMDJSON_ERR_* constants, and the corresponding exception codes, increased by 1.
 * Faster decoding: presize arrays, fill lists directly, write stdClass properties directly
+* Add simdjson_encode() (PHP 8.0+), which produces the same output as json_encode() and throws SimdJsonException on errors. Floats are formatted with Dragonbox.
 * A JSON pointer that indexes into a scalar value now reports SIMDJSON_ERR_NO_SUCH_FIELD instead of SIMDJSON_ERR_INVALID_JSON_POINTER, so simdjson_key_exists() returns false instead of throwing.
  </notes>
  <contents>
@@ -52,6 +53,10 @@
    <dir name="src">
     <file name="simdjson_bindings.cpp" role="src"/>
     <file name="simdjson_bindings_defs.h" role="src"/>
+    <file name="simdjson_encoder.cpp" role="src"/>
+    <file name="simdjson_encoder.h" role="src"/>
+    <file name="dragonbox.h" role="src"/>
+    <file name="dragonbox-LICENSE-Boost" role="doc"/>
     <file name="simdjson.cpp" role="src"/>
     <file name="simdjson.h" role="src"/>
    </dir>
@@ -59,6 +64,7 @@
     <file name="32bit_support.phpt" role="test"/>
     <file name="64bit_support.phpt" role="test"/>
     <file name="decode_args.phpt" role="test"/>
+    <file name="decode_byte_order_mark.phpt" role="test"/>
     <file name="decode_array_fill.phpt" role="test"/>
     <file name="decode_exception.phpt" role="test"/>
     <file name="decode_integer_overflow.phpt" role="test"/>
@@ -77,6 +83,23 @@
     <file name="decode_types.phpt" role="test"/>
     <file name="depth.phpt" role="test"/>
     <file name="dump.inc" role="test"/>
+    <file name="decode_uint64_associative.phpt" role="test"/>
+    <file name="encode_integers.phpt" role="test"/>
+    <file name="encode_stack_limit.phpt" role="test"/>
+    <file name="info.phpt" role="test"/>
+    <file name="key_count_uncountable_exception.phpt" role="test"/>
+    <file name="key_functions_invalid_json.phpt" role="test"/>
+    <file name="encode.inc" role="test"/>
+    <file name="encode_basic.phpt" role="test"/>
+    <file name="encode_deep_nesting.phpt" role="test"/>
+    <file name="encode_enums.phpt" role="test"/>
+    <file name="encode_errors.phpt" role="test"/>
+    <file name="encode_floats.phpt" role="test"/>
+    <file name="encode_hooks_lazy.phpt" role="test"/>
+    <file name="encode_matches_json_encode.phpt" role="test"/>
+    <file name="encode_objects.phpt" role="test"/>
+    <file name="encode_shared_keys.phpt" role="test"/>
+    <file name="encode_strings.phpt" role="test"/>
     <file name="is_valid.phpt" role="test"/>
     <file name="is_valid_args.phpt" role="test"/>
     <file name="key_count.phpt" role="test"/>

@@ -183,6 +183,22 @@ function simdjson_key_exists(string $json, string $key, int $depth = 512) : bool
 function simdjson_key_value(string $json, string $key, bool $associative = false, int $depth = 512) {}
 
 /**
+ * Returns the JSON representation of $value.
+ * Produces the same output as json_encode() for every value and flag. Requires PHP 8.0+.
+ *
+ * @param mixed $value The value being encoded
+ * @param int $flags Any combination of the JSON_* flags accepted by json_encode().
+ *                   JSON_THROW_ON_ERROR has no effect because errors always throw.
+ *                   With JSON_PARTIAL_OUTPUT_ON_ERROR, the partial output is returned instead of throwing.
+ * @param int $depth The maximum nesting depth of the structure being encoded.
+ * @return string
+ * @throws SimdJsonException when the value cannot be encoded.
+ *                           The error code is the JSON_ERROR_* constant json_last_error() would report.
+ * @throws SimdJsonValueError for invalid $depth
+ */
+function simdjson_encode(mixed $value, int $flags = 0, int $depth = 512) : string {}
+
+/**
  * An error thrown by simdjson when processing json.
  *
  * The error code is available as $e->getCode().
@@ -229,6 +245,10 @@ In `json_decode`, an array with a scalar has the same depth as an array with no 
 In `simdjson_decode`, an array with a scalar is one level deeper than an array with no elements.
 For typical use cases, this shouldn't matter.
 (e.g. `simdjson_decode('[[]]', true, 2)` will succeed but `json_decode('[[]]', true, 2)` and `simdjson_decode('[[1]]', true, 2)` will fail.)
+
+## Third-party code
+
+`simdjson_encode()` formats floats with [Dragonbox](https://github.com/jk-jeon/dragonbox) by Junekey Jeon, bundled as `src/dragonbox.h` under the Boost Software License 1.0 (see `src/dragonbox-LICENSE-Boost`).
 
 ## Benchmarks
 See the [benchmark](./benchmark) folder for more benchmarks.

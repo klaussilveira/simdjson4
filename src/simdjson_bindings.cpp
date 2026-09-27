@@ -120,6 +120,9 @@ build_parsed_json_cust(simdjson_php_parser* parser, simdjson::dom::element &doc,
         return error;
     }
 
+    if (len >= 3 && memcmp(buf, "\xEF\xBB\xBF", 3) == 0) {
+        return simdjson::TAPE_ERROR;
+    }
     error = parser->parser.parse(buf, len, realloc_if_needed && !simdjson_padding_is_readable(buf, len)).get(doc);
     if (error) {
         return error;

@@ -33,6 +33,7 @@ modules/
 php_test_results_*.txt
 tests/*
 !tests/**/*.phpt
+!tests/*.inc
 !tests/_files/
 *~
 configure.ac
