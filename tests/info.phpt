@@ -2,12 +2,12 @@
 simdjson reports its version and active implementation in phpinfo()
 --FILE--
 <?php
-(new ReflectionExtension('simdjson'))->info();
+(new ReflectionExtension('simdjson4'))->info();
 ?>
 --EXPECTF--
-simdjson
+simdjson4
 
-simdjson support => enabled
+simdjson4 support => enabled
 Version => %s
-Support => https://github.com/crazyxman/simdjson_php
+Support => https://github.com/klaussilveira/simdjson4
 Implementation => %s

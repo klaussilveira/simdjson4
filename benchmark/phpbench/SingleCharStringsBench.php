@@ -6,7 +6,7 @@ namespace SimdjsonBench;
 
 use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
-if (!extension_loaded('simdjson')) {
+if (!extension_loaded('simdjson4')) {
         exit;
 }
 
@@ -19,7 +19,7 @@ if (!extension_loaded('simdjson')) {
  * Note that in this benchmark, PHP garbage collecting the array returned by simdjson_decode can skip over the array keys,
  * because none of the keys were reference counted.
  *
- * @Revs(5)
+ * @Revs(1000)
  * @Iterations(5)
  * @Warmup(3)
  * @OutputTimeUnit("milliseconds", precision=5)

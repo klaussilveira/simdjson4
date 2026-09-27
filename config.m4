@@ -1,17 +1,18 @@
 dnl config.m4 for extension simdjson
 
-PHP_ARG_ENABLE(simdjson, whether to enable simdjson, [ --enable-simdjson   Enable simdjson])
+PHP_ARG_ENABLE(simdjson4, whether to enable simdjson4, [ --enable-simdjson4   Enable simdjson4])
 
-if test "$PHP_SIMDJSON" != "no"; then
+if test "$PHP_SIMDJSON4" != "no"; then
 
   PHP_REQUIRE_CXX()
 
   AC_MSG_CHECKING([PHP version])
 
-  if test -z "$PHP_CONFIG"; then
-    AC_MSG_ERROR([php-config not found])
+  if test -n "$PHP_CONFIG"; then
+    php_version=`$PHP_CONFIG --vernum`
+  else
+    php_version=$PHP_VERSION_ID
   fi
-  php_version=`$PHP_CONFIG --vernum`
 
   if test -z "$php_version"; then
     AC_MSG_ERROR([failed to detect PHP version, please report])
@@ -28,17 +29,17 @@ if test "$PHP_SIMDJSON" != "no"; then
   AX_CHECK_COMPILE_FLAG([-fvisibility=hidden],
                         [CXXFLAGS="$CXXFLAGS -fvisibility=hidden"])
 
-  AC_DEFINE(HAVE_SIMDJSON, 1, [whether simdjson is enabled])
+  AC_DEFINE(HAVE_SIMDJSON4, 1, [whether simdjson4 is enabled])
   dnl Disable exceptions because PHP is written in C and loads this C++ module, handle errors manually.
   dnl Disable development checks of C simdjson library in php debug builds (can manually override)
-  PHP_NEW_EXTENSION(simdjson, [
+  PHP_NEW_EXTENSION(simdjson4, [
       php_simdjson.cpp                    \
       src/simdjson_bindings.cpp           \
       src/simdjson_encoder.cpp            \
       src/simdjson.cpp],
     $ext_shared,, "-std=c++17 -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -DSIMDJSON_EXCEPTIONS=0 -DSIMDJSON_DEVELOPMENT_CHECKS=0", cxx)
 
-  PHP_INSTALL_HEADERS([ext/simdjson], [php_simdjson.h src/simdjson_bindings_defs.h])
+  PHP_INSTALL_HEADERS([ext/simdjson4], [php_simdjson.h src/simdjson_bindings_defs.h])
   PHP_ADD_MAKEFILE_FRAGMENT
   PHP_ADD_BUILD_DIR(src, 1)
 fi

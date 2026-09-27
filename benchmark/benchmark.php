@@ -17,7 +17,9 @@ if (!function_exists('hrtime')) {
 const ITERATIONS = 4;
 
 // Print the amount of nanoseconds taken on average for the functions, as well as the relative amount of time taken compared to json_decode
-$result = "filename|json_decode|simdjson_decode|simdjson_is_valid|relative_decode|relative_is_valid\n---|:--:|---:|---:|---:|--:\n";
+$encode = function_exists('simdjson_encode');
+$result = "filename|json_decode|simdjson_decode|simdjson_is_valid|relative_decode|relative_is_valid";
+$result .= $encode ? "|json_encode|simdjson_encode|relative_encode\n---|:--:|---:|---:|---:|--:|:--:|---:|--:\n" : "\n---|:--:|---:|---:|---:|--:\n";
 foreach (glob(__DIR__.'/../jsonexamples/*.json') as $item) {
 
     $jsonString = file_get_contents($item);
@@ -39,7 +41,30 @@ foreach (glob(__DIR__.'/../jsonexamples/*.json') as $item) {
 
     $relative_decode = sprintf('%.2fx', $simdd_time / $jsond_time);
     $relative_is_valid = sprintf('%.2fx', $simdi_time / $jsond_time);
-    $result.= basename($item)."|{$jsond_time}|{$simdd_time}|$simdi_time|$relative_decode|$relative_is_valid\n";
+    $result.= basename($item)."|{$jsond_time}|{$simdd_time}|$simdi_time|$relative_decode|$relative_is_valid";
+
+    if ($encode) {
+        $value = json_decode($jsonString, true);
+        simdjson_encode($value);
+        json_encode($value);
+
+        $stime = hrtime(true);
+        for ($i = 0; $i < ITERATIONS; $i++) {
+            simdjson_encode($value);
+        }
+        $etime = hrtime(true);
+        $simde_time = (int)(($etime - $stime) / ITERATIONS);
+
+        $stime = hrtime(true);
+        for ($i = 0; $i < ITERATIONS; $i++) {
+            json_encode($value);
+        }
+        $etime = hrtime(true);
+        $jsone_time = (int)(($etime - $stime) / ITERATIONS);
+
+        $result .= sprintf('|%d|%d|%.2fx', $jsone_time, $simde_time, $simde_time / $jsone_time);
+    }
+    $result .= "\n";
 }
 
 echo $result;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
- <name>simdjson</name>
+ <name>simdjson4</name>
  <channel>pecl.php.net</channel>
  <summary>Provides faster json decoding through simdjson bindings for PHP</summary>
  <description>Provides faster json decoding through simdjson bindings for PHP (Single Instruction, Multiple Data)</description>
@@ -35,6 +35,7 @@
 * BC break: SimdJsonException messages now start with the error code name, e.g. "DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)".
 * BC break: The numeric values of SIMDJSON_ERR_UTF8_ERROR and all later SIMDJSON_ERR_* constants, and the corresponding exception codes, increased by 1.
 * Faster decoding: presize arrays, fill lists directly, write stdClass properties directly
+* The extension is now named simdjson4 (extension=simdjson4). Function, class and constant names are unchanged.
 * Add simdjson_encode() (PHP 8.0+), which produces the same output as json_encode() and throws SimdJsonException on errors. Floats are formatted with Dragonbox.
 * A JSON pointer that indexes into a scalar value now reports SIMDJSON_ERR_NO_SUCH_FIELD instead of SIMDJSON_ERR_INVALID_JSON_POINTER, so simdjson_key_exists() returns false instead of throwing.
  </notes>
@@ -152,7 +153,7 @@
    </pearinstaller>
   </required>
  </dependencies>
- <providesextension>simdjson</providesextension>
+ <providesextension>simdjson4</providesextension>
  <extsrcrelease/>
  <changelog>
   <release>

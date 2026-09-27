@@ -1,0 +1,9 @@
+/.appveyor.yml export-ignore
+/.dockerignore export-ignore
+/.editorconfig export-ignore
+/.github export-ignore
+/benchmark export-ignore
+/docker_* export-ignore
+/jsonexamples export-ignore
+/phpbench.json.dist export-ignore
+/scripts export-ignore

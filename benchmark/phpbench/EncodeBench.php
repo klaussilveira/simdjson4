@@ -6,7 +6,7 @@ namespace SimdjsonBench;
 
 use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
-if (!extension_loaded('simdjson4')) {
+if (!function_exists('simdjson_encode')) {
         exit;
 }
 
@@ -16,19 +16,18 @@ if (!extension_loaded('simdjson4')) {
  * @Warmup(3)
  * @OutputTimeUnit("milliseconds", precision=5)
  * @BeforeMethods({"init"})
- * @Groups({"decode"})
+ * @Groups({"encode"})
  */
-class DecodeBench
+class EncodeBench
 {
 
-    /**
-     * @var string
-     */
-    private $json;
+    private array $data;
+
+    private string $expected;
 
     public function init(): void
     {
-        $this->json = <<<EOF
+        $json = <<<EOF
 { 
   "result" : [ 
     { 
@@ -64,16 +63,16 @@ class DecodeBench
   "code" : 201 
 }
 EOF;
+        $this->data = json_decode($json, true);
+        $this->expected = json_encode($this->data);
     }
 
     /**
      * @Subject()
      */
-    public function jsonDecodeAssoc(): void
+    public function jsonEncode(): void
     {
-        $data = json_decode($this->json, true);
-
-        if ('World3' !== $data['result'][0]['Hello3']) {
+        if ($this->expected !== json_encode($this->data)) {
             throw new \RuntimeException('error');
         }
     }
@@ -81,35 +80,9 @@ EOF;
     /**
      * @Subject()
      */
-    public function jsonDecode(): void
+    public function simdjsonEncode(): void
     {
-        $data = json_decode($this->json, false);
-
-        if ('World3' !== $data->result[0]->Hello3) {
-            throw new \RuntimeException('error');
-        }
-    }
-
-    /**
-     * @Subject()
-     */
-    public function simdjsonDecodeAssoc()
-    {
-        $data = \simdjson_decode($this->json, true);
-
-        if ('World3' !== $data['result'][0]['Hello3']) {
-            throw new \RuntimeException('error');
-        }
-    }
-
-    /**
-     * @Subject()
-     */
-    public function simdjsonDecode()
-    {
-        $data = \simdjson_decode($this->json, false);
-
-        if ('World3' !== $data->result[0]->Hello3) {
+        if ($this->expected !== \simdjson_encode($this->data)) {
             throw new \RuntimeException('error');
         }
     }

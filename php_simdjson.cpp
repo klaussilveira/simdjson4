@@ -302,7 +302,7 @@ zend_function_entry simdjson_functions[] = {
 /** {{{ PHP_GINIT_FUNCTION
 */
 PHP_GINIT_FUNCTION (simdjson) {
-#if defined(COMPILE_DL_SIMDJSON) && defined(ZTS)
+#if defined(COMPILE_DL_SIMDJSON4) && defined(ZTS)
 ZEND_TSRMLS_CACHE_UPDATE();
 #endif
 }
@@ -387,7 +387,7 @@ PHP_RSHUTDOWN_FUNCTION (simdjson) {
 */
 PHP_MINFO_FUNCTION (simdjson) {
     php_info_print_table_start();
-    php_info_print_table_header(2, "simdjson support", "enabled");
+    php_info_print_table_header(2, "simdjson4 support", "enabled");
 
     php_info_print_table_row(2, "Version", PHP_SIMDJSON_VERSION);
     php_info_print_table_row(2, "Support", SIMDJSON_SUPPORT_URL);
@@ -407,12 +407,12 @@ zend_module_dep simdjson_deps[] = {
 };
 /* }}} */
 
-/** {{{ simdjson_module_entry
+/** {{{ simdjson4_module_entry
 */
-zend_module_entry simdjson_module_entry = {
+zend_module_entry simdjson4_module_entry = {
     STANDARD_MODULE_HEADER_EX, NULL,
     simdjson_deps,
-    "simdjson",
+    "simdjson4",
     simdjson_functions,
     PHP_MINIT(simdjson),
     PHP_MSHUTDOWN(simdjson),
@@ -430,11 +430,11 @@ zend_module_entry simdjson_module_entry = {
 
 /** {{{ DL support
  */
-#ifdef COMPILE_DL_SIMDJSON
+#ifdef COMPILE_DL_SIMDJSON4
 #ifdef ZTS
 ZEND_TSRMLS_CACHE_DEFINE();
 #endif
 
-ZEND_GET_MODULE(simdjson)
+ZEND_GET_MODULE(simdjson4)
 #endif
 /* }}} */

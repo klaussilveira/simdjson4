@@ -1,0 +1,20 @@
+{
+    "name": "klaussilveira/simdjson4",
+    "description": "Fast JSON decoding and encoding for PHP, powered by simdjson",
+    "type": "php-ext",
+    "license": "Apache-2.0",
+    "keywords": ["json", "simdjson", "simd", "decode", "encode", "parser"],
+    "homepage": "https://github.com/klaussilveira/simdjson4",
+    "authors": [
+        {
+            "name": "Klaus Silveira",
+            "email": "klaussilveira@php.net"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "php-ext": {
+        "extension-name": "simdjson4"
+    }
+}

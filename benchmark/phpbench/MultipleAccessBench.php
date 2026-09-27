@@ -6,12 +6,12 @@ namespace SimdjsonBench;
 
 use PhpBench\Benchmark\Metadata\Annotations\Subject;
 
-if (!extension_loaded('simdjson')) {
+if (!extension_loaded('simdjson4')) {
         exit;
 }
 
 /**
- * @Revs(5)
+ * @Revs(1000)
  * @Iterations(5)
  * @Warmup(3)
  * @OutputTimeUnit("milliseconds", precision=5)

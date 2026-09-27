@@ -13,7 +13,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.5-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP84-alpine:
     name: PHP 8.4 Alpine
@@ -26,7 +26,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.4-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP83-alpine:
     name: PHP 8.3 Alpine
@@ -39,7 +39,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.3-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP82-alpine:
     name: PHP 8.2 Alpine
@@ -52,7 +52,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.2-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP81-alpine:
     name: PHP 8.1 Alpine 3.15
@@ -65,7 +65,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.1-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP80-alpine:
     name: PHP 8.0 Alpine 3.12
@@ -78,7 +78,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php8.0-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP74-alpine:
     name: PHP 7.4 Alpine 3.12
@@ -91,7 +91,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.4-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP73-alpine:
     name: PHP 7.3 Alpine 3.12
@@ -104,7 +104,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.3-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP72-alpine:
     name: PHP 7.2 Alpine 3.12
@@ -117,7 +117,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.2-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   PHP71-alpine:
     name: PHP 7.1 Alpine 3.10
@@ -130,7 +130,7 @@ jobs:
         run: "docker build -t simdjsontest -f docker_php7.1-alpine ."
 
       - name: "Show"
-        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson"
+        run: "docker run --rm --env SIMDJSON_HIGH_MEMORY_TESTS=1 simdjsontest php --ri simdjson4"
 
   Ubuntu:
     strategy:
@@ -181,7 +181,7 @@ jobs:
           make test TESTS="--show-diff" || exit 1
 
       - name: "Show"
-        run: "php -dextension=simdjson.so --ri simdjson"
+        run: "php -dextension=simdjson4.so --ri simdjson4"
 
       - name: "Error log"
         if: ${{ failure() }}

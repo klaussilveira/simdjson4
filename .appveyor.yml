@@ -118,7 +118,7 @@ build_script:
                 echo "" | Out-File -Encoding "ASCII" task.bat
                 echo "call phpize 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
 
-                $cmd = 'call configure --enable-simdjson --with-prefix=c:\build-cache\' + $dname + ' 2>&1'
+                $cmd = 'call configure --enable-simdjson4 --with-prefix=c:\build-cache\' + $dname + ' 2>&1'
                 echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
                 echo "set REPORT_EXIT_STATUS=1" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "set NO_INTERACTION=1" | Out-File -Encoding "ASCII" -Append task.bat

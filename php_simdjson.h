@@ -48,8 +48,8 @@
  */
 BEGIN_EXTERN_C()
 
-extern zend_module_entry simdjson_module_entry;
-#define phpext_simdjson_ptr &simdjson_module_entry
+extern zend_module_entry simdjson4_module_entry;
+#define phpext_simdjson4_ptr &simdjson4_module_entry
 
 #define PHP_SIMDJSON_VERSION                  "5.0.0dev"
 /**
@@ -59,7 +59,7 @@ extern zend_module_entry simdjson_module_entry;
  */
 #define PHP_SIMDJSON_VERSION_ID               50000
 
-#define SIMDJSON_SUPPORT_URL                  "https://github.com/crazyxman/simdjson_php"
+#define SIMDJSON_SUPPORT_URL                  "https://github.com/klaussilveira/simdjson4"
 
 #define SIMDJSON_PARSE_DEFAULT_DEPTH          512
 
@@ -88,7 +88,7 @@ PHP_RSHUTDOWN_FUNCTION(simdjson);
 PHP_MINFO_FUNCTION(simdjson);
 
 #ifdef ZTS
-#ifdef COMPILE_DL_SIMDJSON
+#ifdef COMPILE_DL_SIMDJSON4
 ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 #endif

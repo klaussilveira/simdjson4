@@ -1,35 +1,67 @@
-# simdjson_php
-simdjson_php bindings for the [simdjson project](https://github.com/lemire/simdjson).
+# simdjson4
 
-[![Build Status](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/crazyxman/simdjson_php/actions/workflows/integration.yml?query=branch%3Amaster)
-[![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/crazyxman/simdjson_php?svg=true)](https://ci.appveyor.com/project/crazyxman/simdjson-php)
+Fast JSON decoding and encoding for PHP. Decoding is powered by [simdjson](https://github.com/simdjson/simdjson), which parses JSON with SIMD instructions. Both directions return exactly what `json_decode()` and `json_encode()` return, only faster.
 
-## Requirement
+[![Build Status](https://github.com/klaussilveira/simdjson4/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/klaussilveira/simdjson4/actions/workflows/integration.yml?query=branch%3Amaster)
 
-- PHP 7.0+ (The latest php version was 8.5 at the time of writing)
-- Prerequisites: g++ (version 7 or better) or clang++ (version 6 or better), and a 64-bit system with a command-line shell (e.g., Linux, macOS, freeBSD). We also support programming environments like Visual Studio and Xcode, but different steps are needed
+## Performance
+
+Measured on an Intel Core i7-9700F (AVX2) with a release build of PHP 8.5.11 on Linux. Each number is the median of 13 interleaved runs, comparing against the PHP functions in the same run. Your numbers will vary with CPU and data, so run the [benchmarks](./benchmark) on your own hardware.
+
+### Decoding
+
+| Data | PHP | simdjson4 | Speedup |
+|---|---|---|---|
+| `twitter.json`, to arrays | `json_decode` | `simdjson_decode` | **3.2x** |
+| `twitter.json`, to objects | `json_decode` | `simdjson_decode` | **3.3x** |
+| `citm_catalog.json` (1.7 MB) | `json_decode` | `simdjson_decode` | **2.7x** |
+| `canada.json` (2.2 MB, floats) | `json_decode` | `simdjson_decode` | **4.7x** |
+| `gsoc-2018.json` (3.3 MB) | `json_decode` | `simdjson_decode` | **4.1x** |
+| `github_events.json` (65 KB) | `json_decode` | `simdjson_decode` | **3.6x** |
+| `demo.json` (387 bytes) | `json_decode` | `simdjson_decode` | **2.3x** |
+| Validate `twitter.json` | `json_validate` | `simdjson_is_valid` | **8.6x** |
+| Validate `canada.json` | `json_validate` | `simdjson_is_valid` | **10.2x** |
+| Read one value from `twitter.json` | `json_decode` + array access | `simdjson_key_value` | **9.4x** |
+| Count one array in `twitter.json` | `count(json_decode(...))` | `simdjson_key_count` | **9.7x** |
+
+### Encoding
+
+| Data | PHP | simdjson4 | Speedup |
+|---|---|---|---|
+| Decoded `twitter.json` | `json_encode` | `simdjson_encode` | **1.2x** |
+| Decoded `twitter.json`, `JSON_UNESCAPED_UNICODE` | `json_encode` | `simdjson_encode` | **1.7x** |
+| Decoded `twitter.json`, `JSON_PRETTY_PRINT` | `json_encode` | `simdjson_encode` | **1.3x** |
+| 10,000 database-style rows | `json_encode` | `simdjson_encode` | **1.7x** |
+| Decoded `gsoc-2018.json` | `json_encode` | `simdjson_encode` | **2.1x** |
+| Decoded `canada.json` (floats) | `json_encode` | `simdjson_encode` | **11.1x** |
+| Decoded `mesh.json` (floats and integers) | `json_encode` | `simdjson_encode` | **7.7x** |
+| 100,000 floats | `json_encode` | `simdjson_encode` | **13.8x** |
+| Long ASCII string | `json_encode` | `simdjson_encode` | **4.6x** |
+| Decoded `demo.json` (387 bytes) | `json_encode` | `simdjson_encode` | **1.1x** |
+
+Encoding a single scalar such as an integer is about 5% slower than `json_encode`, because of a small fixed per-call cost.
+
+## Requirements
+
+- Decoding: PHP 7.0 or newer. Encoding (`simdjson_encode()`): PHP 8.0 or newer. Tested up to PHP 8.5 and PHP 8.6 RC.
+- A C++17 compiler (g++ 7 or newer, or clang++ 6 or newer) and a 64-bit system.
 
 ## Installing
 
-### Linux
+### With PIE
 
-simdjson may also be installed with the command `pecl install simdjson` (You will need to enable simdjson in php.ini)
+Install with [PIE](https://github.com/php/pie), the PHP Installer for Extensions:
 
-Alternately, you may wish to [build from source](#compile-simdjson_php-in-linux).
+```
+pie install klaussilveira/simdjson4
+```
 
-### MacOS
+PIE builds the extension from source on Linux and macOS, and installs pre-built DLLs on Windows. The extension is loaded as `simdjson4`.
 
-`pecl install simdjson` is the recommended installation method (You will need to enable simdjson in php.ini)
+The `simdjson` package on PECL is the original 4.0.0 release from [crazyxman/simdjson_php](https://github.com/crazyxman/simdjson_php). It does not include `simdjson_encode()` or any of the changes in this repository.
 
-Alternately, you may wish to [build from source](#compile-simdjson_php-in-linux).
+### From source
 
-### Installing on Windows
-
-Prebuilt DLLs can be [downloaded from PECL](https://pecl.php.net/package/simdjson) once the [PHP for Windows team fixes hardware issues](https://windows.php.net/).
-
-See https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2#building_pecl_extensions and .appveyor.yml for how to build this, in the meantime.
-
-## Compile simdjson_php in Linux
 ```
 $ phpize
 $ ./configure
@@ -41,10 +73,13 @@ $ make install
 Add the following line to your php.ini
 
 ```
-extension=simdjson.so
+extension=simdjson4.so
 ```
 
-## simdjson_php Usage
+## Usage
+
+### Decoding
+
 ```php
 $jsonString = <<<'JSON'
 {
@@ -63,49 +98,63 @@ $jsonString = <<<'JSON'
 }
 JSON;
 
-// Check if a JSON string is valid:
-$isValid = simdjson_is_valid($jsonString); //return bool
-var_dump($isValid);  // true
+// Decode like json_decode(): arrays with true, stdClass objects with false.
+$data = simdjson_decode($jsonString, true);
+var_dump($data['Image']['Width']); // int(800)
 
-// Parsing a JSON string. similar to the json_decode() function but without the fourth argument
+$object = simdjson_decode($jsonString);
+var_dump($object->Image->Title); // string(20) "View from 15th Floor"
+
+// Invalid JSON throws SimdJsonException instead of returning null.
 try {
-    // returns array|stdClass|string|float|int|bool|null.
-    $parsedJSON = simdjson_decode($jsonString, true, 512);
-    var_dump($parsedJSON); // PHP array
-} catch (RuntimeException $e) {
-    echo "Failed to parse $jsonString: {$e->getMessage()}\n";
+    simdjson_decode('{"broken":');
+} catch (SimdJsonException $e) {
+    echo $e->getMessage(), "\n";
 }
 
-// note. "/" is a separator. Can be used as the "key" of the object and the "index" of the array
-// E.g. "/Image/Thumbnail/Url" is recommended starting in simdjson 4.0.0,
-// but "Image/Thumbnail/Url" is accepted for now.
+// Check whether a string is valid JSON without building PHP values.
+var_dump(simdjson_is_valid($jsonString)); // bool(true)
 
-// get the value of a "key" in a json string
-// (before simdjson 4.0.0, the recommended leading "/" had to be omitted)
-$value = simdjson_key_value($jsonString, "/Image/Thumbnail/Url");
-var_dump($value); // string(38) "http://www.example.com/image/481989943"
-
-$value = simdjson_key_value($jsonString, "/Image/IDs/4", true);
-var_dump($value);
-/*
-array(1) {
-  ["p"]=>
-  string(2) "30"
-}
-*/
-
-// check if the key exists. return true|false|null. "true" exists, "false" does not exist,
-// throws for invalid JSON.
-$res = simdjson_key_exists($jsonString, "/Image/IDs/1");
-var_dump($res) //bool(true)
-
-// count the values
-$res = simdjson_key_count($jsonString, "/Image/IDs");
-var_dump($res) //int(5)
-
+// Read, check and count values by JSON pointer without decoding the whole document.
+var_dump(simdjson_key_value($jsonString, "/Image/Thumbnail/Url")); // string(38) "http://www.example.com/image/481989943"
+var_dump(simdjson_key_value($jsonString, "/Image/IDs/4", true));   // array(1) { ["p"]=> string(2) "30" }
+var_dump(simdjson_key_exists($jsonString, "/Image/IDs/1"));        // bool(true)
+var_dump(simdjson_key_count($jsonString, "/Image/IDs"));           // int(5)
 ```
 
-## simdjson_php API
+### Encoding
+
+```php
+$data = ['id' => 42, 'name' => 'Ada', 'tags' => ['math', 'code'], 'score' => 9.5, 'url' => 'https://example.com/a/b'];
+
+echo simdjson_encode($data);
+// {"id":42,"name":"Ada","tags":["math","code"],"score":9.5,"url":"https:\/\/example.com\/a\/b"}
+
+// Every json_encode() flag is supported.
+echo simdjson_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+// {
+//     "id": 42,
+//     "name": "Ada",
+//     "tags": [
+//         "math",
+//         "code"
+//     ],
+//     "score": 9.5,
+//     "url": "https://example.com/a/b"
+// }
+
+echo simdjson_encode((object)['price' => 10.0], JSON_PRESERVE_ZERO_FRACTION);
+// {"price":10.0}
+
+// Values that cannot be encoded throw SimdJsonException, with the JSON_ERROR_* code json_encode() would report.
+try {
+    simdjson_encode(['value' => NAN]);
+} catch (SimdJsonException $e) {
+    echo $e->getMessage(); // Inf and NaN cannot be JSON encoded
+}
+```
+
+## simdjson4 API
 
 ```php
 <?php
@@ -120,7 +169,7 @@ var_dump($res) //int(5)
  * @param int $depth the maximum nesting depth of the structure being decoded.
  * @return array|stdClass|string|float|int|bool|null
  * @throws SimdJsonException for invalid JSON
- *                           (or $json over 4GB long, or out of range integer/float)
+ *                           (or $json over 4GB long)
  * @throws SimdJsonValueError for invalid $depth
  */
 function simdjson_decode(string $json, bool $associative = false, int $depth = 512) {}
@@ -146,7 +195,7 @@ function simdjson_is_valid(string $json, int $depth = 512) : bool {}
                                      to values that are neither objects nor arrays.
  * @return int
  * @throws SimdJsonException for invalid JSON or invalid JSON pointer
- *                           (or document over 4GB, or out of range integer/float)
+ *                           (or document over 4GB)
  * @throws SimdJsonValueError for invalid $depth
  * @see https://www.rfc-editor.org/rfc/rfc6901.html
  */
@@ -160,7 +209,7 @@ function simdjson_key_count(string $json, string $key, int $depth = 512, bool $t
  * @param int $depth the maximum nesting depth of the structure being decoded.
  * @return bool (false if key is not found)
  * @throws SimdJsonException for invalid JSON or invalid JSON pointer
- *                           (or document over 4GB, or out of range integer/float)
+ *                           (or document over 4GB)
  * @throws SimdJsonValueError for invalid $depth
  * @see https://www.rfc-editor.org/rfc/rfc6901.html
  */
@@ -176,7 +225,7 @@ function simdjson_key_exists(string $json, string $key, int $depth = 512) : bool
  *                          When false, JSON objects will be returned as objects.
  * @return array|stdClass|string|float|int|bool|null the value at $key
  * @throws SimdJsonException for invalid JSON or invalid JSON pointer
- *                           (or document over 4GB, or out of range integer/float)
+ *                           (or document over 4GB)
  * @throws SimdJsonValueError for invalid $depth
  * @see https://www.rfc-editor.org/rfc/rfc6901.html
  */
@@ -225,17 +274,11 @@ class SimdJsonValueError extends ValueError {
 
 ## Edge cases
 
-There are some differences from `json_decode()` due to the implementation of the underlying simdjson library. This will throw a RuntimeException if simdjson rejects the JSON.
+### Decoding
 
-Note that the simdjson PECL is using a fork of the simdjson C library to imitate php's handling of integers and floats in JSON.
+`simdjson_decode()` returns the same values as `json_decode()`, including for numbers outside the 64-bit range: integers that do not fit become floats, and exponents beyond the range of a double become `INF` or `-INF`. (The simdjson library itself rejects such numbers; this extension bundles a copy patched to match `json_decode()`.) The remaining differences are:
 
-1) **Until simdjson 2.1.0,** `simdjson_decode()` differed in how out of range 64-bit integers and floats are handled.
-
-See https://github.com/simdjson/simdjson/blob/master/doc/basics.md#standard-compliance
-
-> - The specification allows implementations to set limits on the range and precision of numbers accepted.  We support 64-bit floating-point numbers as well as integer values.
->   - We parse integers and floating-point numbers as separate types which allows us to support all signed (two's complement) 64-bit integers, like a Java `long` or a C/C++ `long long` and all 64-bit unsigned integers. When we cannot represent exactly an integer as a signed or unsigned 64-bit value, we reject the JSON document.
->   - We support the full range of 64-bit floating-point numbers (binary64). The values range from `std::numeric_limits<double>::lowest()`  to `std::numeric_limits<double>::max()`, so from -1.7976e308 all the way to 1.7975e308. Extreme values (less or equal to -1e308, greater or equal to 1e308) are rejected: we refuse to parse the input document. Numbers are parsed with a perfect accuracy (ULP 0): the nearest floating-point value is chosen, rounding to even when needed. If you serialized your floating-point numbers with 17 significant digits in a standard compliant manner, the simdjson library is guaranteed to recover the same numbers, exactly.
+1) Invalid JSON throws a `SimdJsonException` (a `RuntimeException`) with a `SIMDJSON_ERR_*` code, instead of returning `null` and setting `json_last_error()`. The error messages differ from `json_last_error_msg()`. The `$flags` argument of `json_decode()` is not supported.
 
 2) The maximum string length that can be passed to `simdjson_decode()` is 4GiB (4294967295 bytes).
 `json_decode()` can decode longer strings.
@@ -246,9 +289,22 @@ In `simdjson_decode`, an array with a scalar is one level deeper than an array w
 For typical use cases, this shouldn't matter.
 (e.g. `simdjson_decode('[[]]', true, 2)` will succeed but `json_decode('[[]]', true, 2)` and `simdjson_decode('[[1]]', true, 2)` will fail.)
 
-## Third-party code
+### Encoding
+
+`simdjson_encode()` produces byte-for-byte the same output as `json_encode()` for every value and flag. The differences are in error handling:
+
+1) Errors throw a `SimdJsonException` whose code is the `JSON_ERROR_*` constant `json_encode()` would report, instead of returning `false`. `JSON_THROW_ON_ERROR` therefore has no effect. With `JSON_PARTIAL_OUTPUT_ON_ERROR`, the partial output is returned and nothing is thrown, like `json_encode()`.
+
+2) `$depth` must be at least 1. `json_encode()` also accepts 0.
+
+3) `json_last_error()` is never changed by `simdjson_encode()`.
+
+## Credits
+
+This project forks [crazyxman/simdjson_php](https://github.com/crazyxman/simdjson_php).
 
 `simdjson_encode()` formats floats with [Dragonbox](https://github.com/jk-jeon/dragonbox) by Junekey Jeon, bundled as `src/dragonbox.h` under the Boost Software License 1.0 (see `src/dragonbox-LICENSE-Boost`).
 
 ## Benchmarks
-See the [benchmark](./benchmark) folder for more benchmarks.
+
+See the [benchmark](./benchmark) folder to run the benchmarks yourself.
