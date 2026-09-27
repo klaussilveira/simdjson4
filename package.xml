@@ -20,8 +20,8 @@
  -->
  <date>2022-10-19</date>
  <version>
-  <release>4.0.1dev</release>
-  <api>4.0.1dev</api>
+  <release>5.0.0dev</release>
+  <api>5.0.0dev</api>
  </version>
  <stability>
   <release>stable</release>
@@ -30,6 +30,11 @@
  <license uri="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</license>
  <notes>
 * Update the README
+* Update the bundled simdjson library to 4.6.11.
+* Add support for PHP 8.3, 8.4 and 8.5, and fix compilation with PHP 8.6.
+* BC break: SimdJsonException messages now start with the error code name, e.g. "DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)".
+* BC break: The numeric values of SIMDJSON_ERR_UTF8_ERROR and all later SIMDJSON_ERR_* constants, and the corresponding exception codes, increased by 1.
+* A JSON pointer that indexes into a scalar value now reports SIMDJSON_ERR_NO_SUCH_FIELD instead of SIMDJSON_ERR_INVALID_JSON_POINTER, so simdjson_key_exists() returns false instead of throwing.
  </notes>
  <contents>
   <dir name="/">

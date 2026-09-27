@@ -26,6 +26,10 @@ extern "C" {
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
 #endif
 
+#ifndef EMPTY_SWITCH_DEFAULT_CASE
+#define EMPTY_SWITCH_DEFAULT_CASE() default: ZEND_UNREACHABLE(); break;
+#endif
+
 #define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
 
 PHP_SIMDJSON_API const char* php_simdjson_error_msg(simdjson_php_error_code error)

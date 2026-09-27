@@ -12,4 +12,4 @@ try {
 
 ?>
 --EXPECTF--
-string(102) "The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc."
+string(156) "TAPE_ERROR: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.  This is a fatal and unrecoverable error."

@@ -12,4 +12,4 @@ try {
 
 ?>
 --EXPECTF--
-string(56) "The JSON field referenced does not exist in this object."
+string(71) "NO_SUCH_FIELD: The JSON field referenced does not exist in this object."

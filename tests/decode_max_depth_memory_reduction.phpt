@@ -27,9 +27,9 @@ Test depth=1024:
 array(0) {
 }
 int(0)
-Caught SimdJsonException: The JSON document was too deep (too many nested objects and arrays)
+Caught SimdJsonException: DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)
 Test depth=134217728:
 array(0) {
 }
 int(0)
-Caught SimdJsonException: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.
+Caught SimdJsonException: TAPE_ERROR: The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.  This is a fatal and unrecoverable error.

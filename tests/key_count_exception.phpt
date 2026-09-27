@@ -18,5 +18,5 @@ try {
 
 ?>
 --EXPECT--
-string(67) "The JSON document was too deep (too many nested objects and arrays)"
-string(56) "The JSON field referenced does not exist in this object."
+string(80) "DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)"
+string(71) "NO_SUCH_FIELD: The JSON field referenced does not exist in this object."

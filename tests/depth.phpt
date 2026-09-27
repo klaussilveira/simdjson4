@@ -34,12 +34,12 @@ int(0)
 array(0) {
 }
 Test '[1]'
-Caught for [1]: The JSON document was too deep (too many nested objects and arrays)
+Caught for [1]: DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)
 array(1) {
   [0]=>
   int(1)
 }
-Caught for [[1]]: The JSON document was too deep (too many nested objects and arrays)
+Caught for [[1]]: DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)
 array(1) {
   [0]=>
   array(0) {

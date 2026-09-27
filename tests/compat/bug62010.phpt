@@ -10,4 +10,4 @@ try {
 }
 ?>
 --EXPECT--
-Caught SimdJsonException: Problem while parsing a string
+Caught SimdJsonException: STRING_ERROR: Problem while parsing a string

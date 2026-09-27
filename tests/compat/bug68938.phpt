@@ -9,4 +9,4 @@ try {
 }
 ?>
 --EXPECT--
-Caught SimdJsonException: Empty: no JSON found
+Caught SimdJsonException: EMPTY: no JSON found
