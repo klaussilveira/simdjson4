@@ -24,13 +24,47 @@ extern "C" {
 
 #if PHP_VERSION_ID < 70300
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
+#define zend_hash_real_init_packed(ht) zend_hash_real_init((ht), 1)
 #endif
 
 #ifndef EMPTY_SWITCH_DEFAULT_CASE
 #define EMPTY_SWITCH_DEFAULT_CASE() default: ZEND_UNREACHABLE(); break;
 #endif
 
+#if defined(__SANITIZE_ADDRESS__)
+#define SIMDJSON_PHP_ASAN 1
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define SIMDJSON_PHP_ASAN 1
+#endif
+#endif
+
 #define SIMDJSON_DEPTH_CHECK_THRESHOLD 100000
+#define SIMDJSON_MIN_PAGE_SIZE 4096
+
+static zend_always_inline bool simdjson_padding_is_readable(const char *buf, size_t len) {
+#ifdef SIMDJSON_PHP_ASAN
+    return false;
+#else
+    if (len == 0) {
+        return false;
+    }
+    uintptr_t last = (uintptr_t)buf + len - 1;
+    return is_zend_mm() && last / SIMDJSON_MIN_PAGE_SIZE == (last + simdjson::SIMDJSON_PADDING) / SIMDJSON_MIN_PAGE_SIZE;
+#endif
+}
+
+static zend_always_inline size_t simdjson_array_size(simdjson::dom::array array) {
+    size_t size = array.size();
+    if (UNEXPECTED(size == 0xFFFFFF)) {
+        size = 0;
+        for (auto it : array) {
+            (void)it;
+            size++;
+        }
+    }
+    return size;
+}
 
 PHP_SIMDJSON_API const char* php_simdjson_error_msg(simdjson_php_error_code error)
 {
@@ -86,7 +120,7 @@ build_parsed_json_cust(simdjson_php_parser* parser, simdjson::dom::element &doc,
         return error;
     }
 
-    error = parser->parser.parse(buf, len, realloc_if_needed).get(doc);
+    error = parser->parser.parse(buf, len, realloc_if_needed && !simdjson_padding_is_readable(buf, len)).get(doc);
     if (error) {
         return error;
     }
@@ -148,9 +182,11 @@ static zend_always_inline void simdjson_set_zval_to_int64(zval *zv, const int64_
 static simdjson_php_error_code create_array(simdjson::dom::element element, zval *return_value) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::STRING :
-            simdjson_set_zval_to_string(return_value, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
+        case simdjson::dom::element_type::STRING : {
+            std::string_view str = element.get_string().value_unsafe();
+            simdjson_set_zval_to_string(return_value, str.data(), str.size());
             break;
+        }
         case simdjson::dom::element_type::INT64 :
             simdjson_set_zval_to_int64(return_value, element.get_int64().value_unsafe());
             break;
@@ -175,18 +211,25 @@ static simdjson_php_error_code create_array(simdjson::dom::element element, zval
             }
 #endif
             zend_array *arr;
-            array_init(return_value);
+            array_init_size(return_value, simdjson_array_size(json_array));
             arr = Z_ARR_P(return_value);
+            zend_hash_real_init_packed(arr);
 
-            for (simdjson::dom::element child : json_array) {
-                zval array_element;
-                simdjson_php_error_code error = create_array(child, &array_element);
-                if (UNEXPECTED(error)) {
-                    zval_ptr_dtor(return_value);
-                    ZVAL_NULL(return_value);
-                    return error;
+            simdjson_php_error_code error = simdjson::SUCCESS;
+            ZEND_HASH_FILL_PACKED(arr) {
+                for (simdjson::dom::element child : json_array) {
+                    zval array_element;
+                    error = create_array(child, &array_element);
+                    if (UNEXPECTED(error)) {
+                        break;
+                    }
+                    ZEND_HASH_FILL_ADD(&array_element);
                 }
-                zend_hash_next_index_insert(arr, &array_element);
+            } ZEND_HASH_FILL_END();
+            if (UNEXPECTED(error)) {
+                zval_ptr_dtor(return_value);
+                ZVAL_NULL(return_value);
+                return error;
             }
 
             break;
@@ -201,7 +244,7 @@ static simdjson_php_error_code create_array(simdjson::dom::element element, zval
             }
 #endif
             zend_array *arr;
-            array_init(return_value);
+            array_init_size(return_value, json_object.size());
             arr = Z_ARR_P(return_value);
 
             for (simdjson::dom::key_value_pair field : json_object) {
@@ -228,9 +271,11 @@ static simdjson_php_error_code create_array(simdjson::dom::element element, zval
 static simdjson_php_error_code create_object(simdjson::dom::element element, zval *return_value) /* {{{ */ {
     switch (element.type()) {
         //ASCII sort
-        case simdjson::dom::element_type::STRING :
-            simdjson_set_zval_to_string(return_value, element.get_c_str().value_unsafe(), element.get_string_length().value_unsafe());
+        case simdjson::dom::element_type::STRING : {
+            std::string_view str = element.get_string().value_unsafe();
+            simdjson_set_zval_to_string(return_value, str.data(), str.size());
             break;
+        }
         case simdjson::dom::element_type::INT64 :
             simdjson_set_zval_to_int64(return_value, element.get_int64().value_unsafe());
             break;
@@ -255,18 +300,25 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
             }
 #endif
             zend_array *arr;
-            array_init(return_value);
+            array_init_size(return_value, simdjson_array_size(json_array));
             arr = Z_ARR_P(return_value);
+            zend_hash_real_init_packed(arr);
 
-            for (simdjson::dom::element child : json_array) {
-                zval value;
-                simdjson_php_error_code error = create_object(child, &value);
-                if (UNEXPECTED(error)) {
-                    zval_ptr_dtor(return_value);
-                    ZVAL_NULL(return_value);
-                    return error;
+            simdjson_php_error_code error = simdjson::SUCCESS;
+            ZEND_HASH_FILL_PACKED(arr) {
+                for (simdjson::dom::element child : json_array) {
+                    zval value;
+                    error = create_object(child, &value);
+                    if (UNEXPECTED(error)) {
+                        break;
+                    }
+                    ZEND_HASH_FILL_ADD(&value);
                 }
-                zend_hash_next_index_insert(arr, &value);
+            } ZEND_HASH_FILL_END();
+            if (UNEXPECTED(error)) {
+                zval_ptr_dtor(return_value);
+                ZVAL_NULL(return_value);
+                return error;
             }
             break;
         }
@@ -303,7 +355,10 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
                 } else {
                     key = zend_string_init(data, size, 0);
                 }
-                zend_std_write_property(obj, key, &value, NULL);
+                if (!obj->properties) {
+                    obj->properties = zend_new_array(json_object.size());
+                }
+                zend_hash_update(obj->properties, key, &value);
                 zend_string_release_ex(key, 0);
 #else
 
@@ -321,10 +376,10 @@ static simdjson_php_error_code create_object(simdjson::dom::element element, zva
                     zend_std_write_property(return_value, &zkey, &value, NULL);
                     zval_ptr_dtor_nogc(&zkey);
                 }
-#endif
                 /* After the key is added to the object (incrementing the reference count) ,
                  * decrement the reference count of the value by one */
                 zval_ptr_dtor_nogc(&value);
+#endif
             }
             break;
         }

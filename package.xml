@@ -34,6 +34,7 @@
 * Add support for PHP 8.3, 8.4 and 8.5, and fix compilation with PHP 8.6.
 * BC break: SimdJsonException messages now start with the error code name, e.g. "DEPTH_ERROR: The JSON document was too deep (too many nested objects and arrays)".
 * BC break: The numeric values of SIMDJSON_ERR_UTF8_ERROR and all later SIMDJSON_ERR_* constants, and the corresponding exception codes, increased by 1.
+* Faster decoding: presize arrays, fill lists directly, write stdClass properties directly
 * A JSON pointer that indexes into a scalar value now reports SIMDJSON_ERR_NO_SUCH_FIELD instead of SIMDJSON_ERR_INVALID_JSON_POINTER, so simdjson_key_exists() returns false instead of throwing.
  </notes>
  <contents>
@@ -58,11 +59,18 @@
     <file name="32bit_support.phpt" role="test"/>
     <file name="64bit_support.phpt" role="test"/>
     <file name="decode_args.phpt" role="test"/>
+    <file name="decode_array_fill.phpt" role="test"/>
     <file name="decode_exception.phpt" role="test"/>
     <file name="decode_integer_overflow.phpt" role="test"/>
     <file name="decode_invalid_property.phpt" role="test"/>
+    <file name="decode_invalid_property_in_array.phpt" role="test"/>
+    <file name="decode_large_array.phpt" role="test"/>
+    <file name="decode_matches_json_decode.phpt" role="test"/>
     <file name="decode_max_depth.phpt" role="test"/>
     <file name="decode_max_depth_memory_reduction.phpt" role="test"/>
+    <file name="decode_object_properties.phpt" role="test"/>
+    <file name="decode_page_boundary.phpt" role="test"/>
+    <file name="decode_page_boundary_system_alloc.phpt" role="test"/>
     <file name="decode_repeat.phpt" role="test"/>
     <file name="decode_result.phpt" role="test"/>
     <file name="decode_strict_types.phpt" role="test"/>
@@ -82,6 +90,7 @@
     <file name="key_value_int.phpt" role="test"/>
     <file name="key_value_result.phpt" role="test"/>
     <file name="key_value_slash.phpt" role="test"/>
+    <file name="page_boundary.inc" role="test"/>
     <file name="uint64_overflow.phpt" role="test"/>
     <file name="_files/result.json" role="test"/>
     <dir name="compat">

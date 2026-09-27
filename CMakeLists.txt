@@ -1,13 +1,16 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(simdjson)
+
+set(CMAKE_CXX_STANDARD 17)
 
 add_compile_definitions(HAVE_SIMDJSON)
 
 set(SOURCE_FILES
     php_simdjson.h
-    simdjson.cpp
-    src/bindings.h
-    src/bindings.cpp
+    php_simdjson.cpp
+    simdjson_arginfo.h
+    src/simdjson_bindings_defs.h
+    src/simdjson_bindings.cpp
     src/simdjson.h
     src/simdjson.cpp
 )
