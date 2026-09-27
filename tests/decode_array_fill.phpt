@@ -13,7 +13,7 @@ foreach ([true, false] as $associative) {
     $a = simdjson_decode('[[1,2],[],[3]]', $associative);
     $a[0][] = 'x';
     $a[1][] = 'y';
-    var_dump(json_encode($a));
+    var_dump($a === [[1, 2, 'x'], ['y'], [3]]);
 
     $list = simdjson_decode('[' . implode(',', range(0, 9999)) . ']', $associative);
     var_dump(count($list), $list[0], $list[9999], array_sum($list));
@@ -39,7 +39,7 @@ array(4) {
   [3]=>
   int(3)
 }
-string(21) "[[1,2,"x"],["y"],[3]]"
+bool(true)
 int(10000)
 int(0)
 int(9999)
@@ -59,7 +59,7 @@ array(4) {
   [3]=>
   int(3)
 }
-string(21) "[[1,2,"x"],["y"],[3]]"
+bool(true)
 int(10000)
 int(0)
 int(9999)

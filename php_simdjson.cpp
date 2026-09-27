@@ -40,7 +40,7 @@ PHP_SIMDJSON_API zend_class_entry *simdjson_value_error_ce;
 /* C++ header file for simdjson_php helper methods/classes */
 #include "src/simdjson_bindings_defs.h"
 #include "src/simdjson_encoder.h"
-/* Single header file from fork of simdjson C project (to imitate php's handling of infinity/overflowing integers in json_decode) */
+/* Single header file of the simdjson C++ library, patched to imitate php's handling of infinity/overflowing integers in json_decode */
 #include "src/simdjson.h"
 
 /* Define RETURN_THROWS macro in older php versions */

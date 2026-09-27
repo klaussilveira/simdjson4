@@ -103,9 +103,11 @@
     <file name="encode_strings.phpt" role="test"/>
     <file name="is_valid.phpt" role="test"/>
     <file name="is_valid_args.phpt" role="test"/>
+    <file name="is_valid_edge_cases.phpt" role="test"/>
     <file name="key_count.phpt" role="test"/>
     <file name="key_count_args.phpt" role="test"/>
     <file name="key_count_exception.phpt" role="test"/>
+    <file name="key_count_large.phpt" role="test"/>
     <file name="key_exists.phpt" role="test"/>
     <file name="key_exists_args.phpt" role="test"/>
     <file name="key_value_args.phpt" role="test"/>
